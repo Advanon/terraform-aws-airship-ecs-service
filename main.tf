@@ -108,24 +108,24 @@ resource "aws_cloudwatch_log_group" "app" {
 #
 # Container_definition
 #
-module "container_definition" {
-  source          = "./modules/ecs_container_definition/"
-  container_name  = "${var.container_name}"
-  container_image = "${var.container_image}"
-
+module "ecs-container-definition" {
+  source                       = "cloudposse/ecs-container-definition/aws"
+  version                      = "0.14.0"
+  container_name               = "${var.container_name}"
+  container_image              = "${var.container_image}"
   container_cpu                = "${var.container_cpu}"
   container_memory             = "${var.container_memory}"
   container_memory_reservation = "${var.container_memory_reservation}"
 
-  container_port = "${var.container_port}"
-  host_port      = "${var.awsvpc_enabled ? var.container_port : var.host_port }"
-
-  hostname = "${var.awsvpc_enabled == 1 ? "" : var.name}"
-
-  container_envvars = "${var.container_envvars}"
-
-  mountpoints = ["${var.mountpoints}"]
-
+  port_mappings = [
+    {
+      containerPort = "${var.container_port}"
+      hostPort      = "${var.awsvpc_enabled ? var.container_port : var.host_port }"
+      protocol      = "tcp"
+    }
+  ]
+  environment = "${var.env_vars}"
+  mount_points = ["${var.mountpoints}"]
   log_options = {
     "awslogs-region"        = "${var.region}"
     "awslogs-group"         = "${element(concat(aws_cloudwatch_log_group.app.*.name, list("")), 0)}"
@@ -146,7 +146,7 @@ module "ecs_task_definition" {
 
   cluster_name = "${local.ecs_cluster_name}"
 
-  container_definitions = "${module.container_definition.json}"
+  container_definitions = "${module.ecs-container-definition.json}"
 
   # awsvpc_enabled sets if the ecs task definition is awsvpc 
   awsvpc_enabled = "${var.awsvpc_enabled}"

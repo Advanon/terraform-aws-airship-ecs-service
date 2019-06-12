@@ -245,6 +245,12 @@ variable "container_envvars" {
   default = {}
 }
 
+variable "env_vars" {
+  description = "List of maps with keys such as `name`, `value` or `valueFrom`"
+  type = "list"
+  default = []
+}
+
 ####
 
 variable "name" {

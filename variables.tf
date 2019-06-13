@@ -197,6 +197,14 @@ variable "container_port" {
   default = ""
 }
 
+variable "container_healthcheck" {
+  default = ""
+}
+
+variable "container_entrypoint" {
+  default = ""
+}
+
 variable "host_port" {
   default = ""
 }
@@ -238,17 +246,10 @@ variable "scaling_properties" {
   default = []
 }
 
-# container_envvars defines extra container env vars, list of maps
-# { key = val,key2= val2}
-
 variable "container_envvars" {
-  default = {}
-}
-
-variable "env_vars" {
   description = "List of maps with keys such as `name`, `value` or `valueFrom`"
-  type = "list"
-  default = []
+  type        = "list"
+  default     = []
 }
 
 ####

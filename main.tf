@@ -116,16 +116,20 @@ module "ecs-container-definition" {
   container_cpu                = "${var.container_cpu}"
   container_memory             = "${var.container_memory}"
   container_memory_reservation = "${var.container_memory_reservation}"
+  entrypoint                   = "${var.container_entrypoint}"
+  healthcheck                  = "${var.container_healthcheck}"
 
   port_mappings = [
     {
       containerPort = "${var.container_port}"
       hostPort      = "${var.awsvpc_enabled ? var.container_port : var.host_port }"
       protocol      = "tcp"
-    }
+    },
   ]
-  environment = "${var.env_vars}"
+
+  environment  = "${var.container_envvars}"
   mount_points = ["${var.mountpoints}"]
+
   log_options = {
     "awslogs-region"        = "${var.region}"
     "awslogs-group"         = "${element(concat(aws_cloudwatch_log_group.app.*.name, list("")), 0)}"

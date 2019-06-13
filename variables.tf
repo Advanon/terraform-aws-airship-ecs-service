@@ -198,11 +198,11 @@ variable "container_port" {
 }
 
 variable "container_healthcheck" {
-  default = ""
+  default = {}
 }
 
 variable "container_entrypoint" {
-  default = ""
+  default = []
 }
 
 variable "host_port" {

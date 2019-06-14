@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
 
 # The ECS TASK ROLE execution role needed for FARGATE & AWS LOGS
 resource "aws_iam_role" "ecs_task_execution_role" {
-  count              = "${(var.create && var.fargate_enabled ) ? 1 : 0 }"
+  count              = "${var.create ? 1 : 0 }"
   name               = "${var.name}-ecs-task-execution_role"
   assume_role_policy = "${data.aws_iam_policy_document.ecs_task_assume_role.json}"
 }
@@ -74,6 +74,14 @@ resource "aws_iam_role_policy" "ssm_permissions" {
   count  = "${(var.create && var.ssm_enabled) ? 1 : 0 }"
   name   = "ssm-permissions"
   role   = "${aws_iam_role.ecs_tasks_role.id}"
+  policy = "${data.aws_iam_policy_document.ssm_permissions.json}"
+}
+
+# Add the SSM policy to the task execution role
+resource "aws_iam_role_policy" "ssm_permissions_execution" {
+  count  = "${(var.create && var.ssm_enabled) ? 1 : 0 }"
+  name   = "${var.name}-ssm-permissions-execution-role"
+  role   = "${aws_iam_role.ecs_task_execution_role.id}"
   policy = "${data.aws_iam_policy_document.ssm_permissions.json}"
 }
 

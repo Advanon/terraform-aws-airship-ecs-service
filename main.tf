@@ -118,6 +118,7 @@ module "ecs-container-definition" {
   container_memory_reservation = "${var.container_memory_reservation}"
   entrypoint                   = "${var.container_entrypoint}"
   healthcheck                  = "${var.container_healthcheck}"
+  command                      = "${var.container_command}"
 
   port_mappings = [
     {

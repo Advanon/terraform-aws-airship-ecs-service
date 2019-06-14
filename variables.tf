@@ -205,6 +205,10 @@ variable "container_entrypoint" {
   default = []
 }
 
+variable "container_command" {
+  default = []
+}
+
 variable "host_port" {
   default = ""
 }

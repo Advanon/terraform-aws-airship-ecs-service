@@ -74,13 +74,14 @@ data "aws_iam_policy_document" "ecr-permissions" {
 
   statement {
     effect = "Allow"
+
     actions = [
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchGetImage",
-      "ecr:BatchCheckLayerAvailability"
+      "ecr:BatchCheckLayerAvailability",
     ]
-    resources = ["${var.container_image}"]
 
+    resources = ["${var.container_image}"]
   }
 }
 
@@ -102,7 +103,7 @@ resource "aws_iam_role_policy" "ssm_permissions_execution" {
 
 # ECR-related permissions
 resource "aws_iam_role_policy" "ecr_permissions" {
-  role = "${aws_iam_role.ecs_task_execution_role.id}"
+  role   = "${aws_iam_role.ecs_task_execution_role.id}"
   policy = "${data.aws_iam_policy_document.ecr-permissions.json}"
 }
 

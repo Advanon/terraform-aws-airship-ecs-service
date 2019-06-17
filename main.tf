@@ -40,6 +40,8 @@ module "iam" {
 
   # In case Fargate is enabled an extra role needs to be added
   fargate_enabled = "${var.fargate_enabled}"
+
+  container_image = "${var.container_image}"
 }
 
 #

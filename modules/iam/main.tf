@@ -69,6 +69,21 @@ data "aws_iam_policy_document" "ssm_permissions" {
   }
 }
 
+data "aws_iam_policy_document" "ecr-permissions" {
+  count = "${var.create ? 1 : 0 }"
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "ecr:BatchCheckLayerAvailability"
+    ]
+    resources = ["${var.container_image}"]
+
+  }
+}
+
 # Add the SSM policy to the task role
 resource "aws_iam_role_policy" "ssm_permissions" {
   count  = "${(var.create && var.ssm_enabled) ? 1 : 0 }"
@@ -83,6 +98,12 @@ resource "aws_iam_role_policy" "ssm_permissions_execution" {
   name   = "${var.name}-ssm-permissions-execution-role"
   role   = "${aws_iam_role.ecs_task_execution_role.id}"
   policy = "${data.aws_iam_policy_document.ssm_permissions.json}"
+}
+
+# ECR-related permissions
+resource "aws_iam_role_policy" "ecr_permissions" {
+  role = "${aws_iam_role.ecs_task_execution_role.id}"
+  policy = "${data.aws_iam_policy_document.ecr-permissions.json}"
 }
 
 # Policy Document to allow S3 Read-Write Access to given paths

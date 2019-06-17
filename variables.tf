@@ -344,3 +344,7 @@ variable "mountpoints" {
   #     read_only = "false"
   # },
 }
+
+variable "vpc_name" {
+  description = "Provide the unique name (not the ID) of the VPC where the ECS cluster is based"
+}

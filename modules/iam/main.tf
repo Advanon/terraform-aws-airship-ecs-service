@@ -102,9 +102,14 @@ resource "aws_iam_role_policy" "ssm_permissions_execution" {
 }
 
 # ECR-related permissions
-resource "aws_iam_role_policy" "ecr_permissions" {
+resource "aws_iam_role_policy" "ecr_permissions_exec_role" {
   role   = "${aws_iam_role.ecs_task_execution_role.id}"
   policy = "${data.aws_iam_policy_document.ecr-permissions.json}"
+}
+
+resource "aws_iam_policy" "ecr_permissions_task_role" {
+  policy = "${data.aws_iam_policy_document.ecr-permissions.json}"
+  role   = "${aws_iam_role.ecs_tasks_role.id}"
 }
 
 # Policy Document to allow S3 Read-Write Access to given paths

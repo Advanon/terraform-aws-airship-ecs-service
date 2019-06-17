@@ -81,7 +81,7 @@ data "aws_iam_policy_document" "ecr-permissions" {
       "ecr:BatchCheckLayerAvailability",
     ]
 
-    resources = ["${var.container_image}"]
+    resources = ["arn:aws:ecr:${var.region}:${data.aws_caller_identity.current.account_id}:repository/${element(split("/", var.container_image), 1)}"]
   }
 }
 

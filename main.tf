@@ -217,7 +217,7 @@ module "ecs_service" {
   awsvpc_subnets = "${var.awsvpc_subnets}"
 
   # awsvpc_security_group_ids defines the vpc_security_group_ids for an awsvpc module
-  awsvpc_security_group_ids = "${concat(aws_security_group.ecs_service_sg.id, var.awsvpc_security_group_ids)}"
+  awsvpc_security_group_ids = "${concat(list(aws_security_group.ecs_service_sg.id), var.awsvpc_security_group_ids)}"
 
   # lb_target_group_arn sets the arn of the target_group the service needs to connect to
   lb_target_group_arn = "${module.alb_handling.lb_target_group_arn}"

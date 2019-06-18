@@ -1,7 +1,7 @@
 locals {
   ecs_cluster_name = "${element(split("/",var.ecs_cluster_id),3)}"
   launch_type      = "${var.fargate_enabled ? "FARGATE" : "EC2" }"
-  ssm_vars         = "${list(data.external.fetch-ssm-params.result.vars)}"
+  ssm_vars         = "${list(data.external.fetch-ssm-params.result["vars"])}"
 
   ssm_vars_path = "/${var.stage}/${var.name}/"
 }

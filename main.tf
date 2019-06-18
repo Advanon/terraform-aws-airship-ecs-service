@@ -288,18 +288,21 @@ resource "aws_security_group" "ecs_service_sg" {
   }
 }
 
-resource "null_resource" "fetch-ssm-params" {
-  provisioner "local-exec" {
-    command = "aws ssm get-parameters-by-path --path ${local.ssm_vars_path}--region ${var.region} | jq '.[][].Name' | jq -s . > ${local.ssm_vars}"
+resource "null_resource" "convert-to-container-vars" {
+  count = "${length(data.external.fetch-ssm-params.result)}"
+
+  triggers = {
+    "name"      = "${element(data.external.fetch-ssm-params.result, count.index)}"
+    "valueFrom" = "${local.ssm_vars_path}${element(data.external.fetch-ssm-params.result, count.index)}"
   }
 }
 
-resource "null_resource" "convert-to-container-vars" {
-  count = "${length(local.ssm_vars)}"
+data "external" "fetch-ssm-params" {
+  program = ["bash", "scripts/get-ssm-params.sh"]
 
-  triggers = {
-    "name"      = "${element(local.ssm_vars, count.index)}"
-    "valueFrom" = "${local.ssm_vars_path}${element(local.ssm_vars, count.index)}"
+  query {
+    region   = "${var.region}"
+    ssm_path = "${local.ssm_vars_path}"
   }
 }
 

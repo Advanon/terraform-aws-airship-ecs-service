@@ -298,7 +298,7 @@ resource "null_resource" "convert-to-container-vars" {
 }
 
 data "external" "fetch-ssm-params" {
-  program = ["sh", "${path.module}/scripts/get-ssm-params.sh"]
+  program = ["sh", "${path.module}/scripts/get-ssm-param-names.sh"]
 
   query {
     region   = "${var.region}"

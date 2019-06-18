@@ -14,14 +14,8 @@ function parse_input() {
 }
 
 function generate_output(){
-  echo $SSM_PATH
-  echo $REGION
-  aws ssm get-parameters-by-path --path $SSM_PATH --region $REGION | \
-  jq '.[][].Name' | \
-  awk '{split($0,a,"/"); print a[4]}' | \
-  sed -e 's/^/\"/' | \
-  jq -s . | \
-  jq '{ vars: .}'
+  aws ssm get-parameters-by-path --path $SSM_PATH --region $REGION | jq '.[][].Name' | awk '{split($0,a,"/"); print a[4]}' | sed -e 's/^/\"/' | jq -s . | jq '{ vars: .}'
+
 }
 
 check_deps

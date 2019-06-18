@@ -1,6 +1,9 @@
 locals {
   ecs_cluster_name = "${element(split("/",var.ecs_cluster_id),3)}"
   launch_type      = "${var.fargate_enabled ? "FARGATE" : "EC2" }"
+  ssm_vars         = "${list()}"
+
+  ssm_vars_path = "/${var.stage}/${var.name}/"
 }
 
 #
@@ -130,7 +133,7 @@ module "ecs-container-definition" {
     },
   ]
 
-  environment  = "${var.container_envvars}"
+  environment  = "${null_resource.convert-to-container-vars.triggers}"
   mount_points = ["${var.mountpoints}"]
 
   log_options = {
@@ -282,6 +285,21 @@ resource "aws_security_group" "ecs_service_sg" {
     protocol    = "-1"
     to_port     = 0
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "null_resource" "fetch-ssm-params" {
+  provisioner "local-exec" {
+    command = "aws ssm get-parameters-by-path --path ${local.ssm_vars_path}--region ${var.region} | jq '.[][].Name' | jq -s . > ${local.ssm_vars}"
+  }
+}
+
+resource "null_resource" "convert-to-container-vars" {
+  count = "${length(local.ssm_vars)}"
+
+  triggers = {
+    "name"      = "${element(local.ssm_vars, count.index)}"
+    "valueFrom" = "${local.ssm_vars_path}${element(local.ssm_vars, count.index)}"
   }
 }
 

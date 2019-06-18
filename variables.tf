@@ -256,6 +256,8 @@ variable "container_envvars" {
   default     = []
 }
 
+variable "stage" {}
+
 ####
 
 variable "name" {

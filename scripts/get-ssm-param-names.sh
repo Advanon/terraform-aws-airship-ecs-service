@@ -14,7 +14,7 @@ function parse_input() {
 }
 
 function generate_output(){
-  aws ssm get-parameters-by-path --path $SSM_PATH --region $REGION | jq '.[][].Name' | awk '{split($0,a,"/"); print a[4]}' | sed -e 's/^/\"/' | jq -s . | jq '{ vars: .}'
+  aws ssm get-parameters-by-path --path $SSM_PATH --region $REGION | jq '.[][].Name' | rev | cut -d '/' -f1 | rev | sed -e 's/^/\"/' | jq -s . | jq '{ vars: .}'
 
 }
 

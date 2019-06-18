@@ -7,10 +7,14 @@ function check_deps() {
 }
 
 function parse_input() {
-  eval "$(jq -r '@sh "REGION=\(.region) SSM_PATH=\(.ssm_path)"')"
+  eval "$(jq -r '@sh "export REGION=\(.region) SSM_PATH=\(.ssm_path)"')"
+  if [[ -z "${REGION}" ]]; then export REGION=none; fi
+  if [[ -z "${SSM_PATH}" ]]; then export SSM_PATH=none; fi
 }
 
 function generate_output(){
+  echo $SSM_PATH
+  echo $REGION
   aws ssm get-parameters-by-path --path $SSM_PATH --region $REGION | \
   jq '.[][].Name' | \
   awk '{split($0,a,"/"); print a[4]}' | \

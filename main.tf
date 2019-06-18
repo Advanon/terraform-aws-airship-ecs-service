@@ -1,7 +1,7 @@
 locals {
   ecs_cluster_name = "${element(split("/",var.ecs_cluster_id),3)}"
   launch_type      = "${var.fargate_enabled ? "FARGATE" : "EC2" }"
-  ssm_vars         = "${list()}"
+  ssm_vars         = "${list(data.external.fetch-ssm-params.result.vars)}"
 
   ssm_vars_path = "/${var.stage}/${var.name}/"
 }
@@ -289,11 +289,11 @@ resource "aws_security_group" "ecs_service_sg" {
 }
 
 resource "null_resource" "convert-to-container-vars" {
-  count = "${length(data.external.fetch-ssm-params.result)}"
+  count = "${length(local.ssm_vars)}"
 
   triggers = {
-    "name"      = "${element(data.external.fetch-ssm-params.result, count.index)}"
-    "valueFrom" = "${local.ssm_vars_path}${element(data.external.fetch-ssm-params.result, count.index)}"
+    "name"      = "${element(local.ssm_vars, count.index)}"
+    "valueFrom" = "${local.ssm_vars_path}${element(local.ssm_vars, count.index)}"
   }
 }
 

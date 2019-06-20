@@ -9,7 +9,3 @@ output "ecs_taskrole_name" {
 output "lb_target_group_arn" {
   value = "${module.alb_handling.lb_target_group_arn}"
 }
-
-output "ssm_vars" {
-  value = "${null_resource.convert-to-container-vars.*.triggers}"
-}

@@ -11,8 +11,6 @@ function parse_input() {
   eval "$(jq -r '@sh "export REGION=\(.region) SSM_PATH=\(.ssm_path)"')"
   if [[ -z "${REGION}" ]]; then export REGION=none; fi
   if [[ -z "${SSM_PATH}" ]]; then export SSM_PATH=none; fi
-  echo $REGION
-  echo $SSM_PATH
 }
 
 function generate_output(){

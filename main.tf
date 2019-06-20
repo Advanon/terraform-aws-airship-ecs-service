@@ -133,7 +133,7 @@ module "ecs-container-definition" {
     },
   ]
 
-  environment  = "${null_resource.convert-to-container-vars.*.triggers}"
+  secrets  = "${null_resource.convert-to-container-vars.*.triggers}"
   mount_points = ["${var.mountpoints}"]
 
   log_options = {

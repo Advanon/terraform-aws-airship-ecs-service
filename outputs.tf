@@ -11,5 +11,5 @@ output "lb_target_group_arn" {
 }
 
 output "ssm_vars" {
-  value = "${null_resource.convert-to-container-vars.triggers}"
+  value = "${null_resource.convert-to-container-vars.*.triggers}"
 }

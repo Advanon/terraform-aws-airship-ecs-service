@@ -1,7 +1,7 @@
 locals {
   ecs_cluster_name = "${element(split("/",var.ecs_cluster_id),3)}"
   launch_type      = "${var.fargate_enabled ? "FARGATE" : "EC2" }"
-  ssm_vars         = "${split(",", data.external.fetch-ssm-params.result.vars)}"
+  ssm_vars         = "${split(",", data.external.fetch-ssm-params.result["varsœ"])}"
 
   ssm_vars_path = "/${var.stage}/${var.name}/"
 }
@@ -287,15 +287,15 @@ resource "aws_security_group" "ecs_service_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
-resource "null_resource" "convert-to-container-vars" {
-  count = "${length(local.ssm_vars)}"
-
-  triggers = {
-    "name"      = "${element(local.ssm_vars, count.index)}"
-    "valueFrom" = "${local.ssm_vars_path}${element(local.ssm_vars, count.index)}"
-  }
-}
+//
+//resource "null_resource" "convert-to-container-vars" {
+//  count = "${length(local.ssm_vars)}"
+//
+//  triggers = {
+//    "name"      = "${element(local.ssm_vars, count.index)}"
+//    "valueFrom" = "${local.ssm_vars_path}${element(local.ssm_vars, count.index)}"
+//  }
+//}
 
 data "external" "fetch-ssm-params" {
   program = ["bash", "${path.module}/scripts/get-ssm-param-names.sh"]

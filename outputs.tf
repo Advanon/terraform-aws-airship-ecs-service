@@ -9,3 +9,7 @@ output "ecs_taskrole_name" {
 output "lb_target_group_arn" {
   value = "${module.alb_handling.lb_target_group_arn}"
 }
+
+output "ssm_vars" {
+  value = "${local.ssm_vars}"
+}

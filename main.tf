@@ -1,9 +1,10 @@
 locals {
-  ecs_cluster_name = "${element(split("/",var.ecs_cluster_id),3)}"
-  launch_type      = "${var.fargate_enabled ? "FARGATE" : "EC2" }"
-  ssm_vars         = "${split(",", data.external.fetch-ssm-params.result["vars"])}"
+  ecs_cluster_name      = "${element(split("/",var.ecs_cluster_id),3)}"
+  launch_type           = "${var.fargate_enabled ? "FARGATE" : "EC2" }"
+  ssm_vars              = "${split(",", data.external.fetch-ssm-params.result["vars"])}"
+  default_ssm_vars_path = "/${var.stage}/${var.name}/"
 
-  ssm_vars_path = "/${var.stage}/${var.name}/"
+  ssm_vars_path = "${length(var.ssm_vars_path)== 0 ? local.default_ssm_vars_path : var.ssm_vars_path }"
 }
 
 #
@@ -133,7 +134,8 @@ module "ecs-container-definition" {
     },
   ]
 
-  secrets  = "${null_resource.convert-to-container-vars.*.triggers}"
+  environment  = "${var.container_envvars}"
+  secrets      = "${null_resource.convert-to-container-vars.*.triggers}"
   mount_points = ["${var.mountpoints}"]
 
   log_options = {

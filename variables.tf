@@ -251,9 +251,14 @@ variable "scaling_properties" {
 }
 
 variable "container_envvars" {
-  description = "List of maps with keys such as `name`, `value` or `valueFrom`"
+  description = "List of maps with keys such as `name` or `value`"
   type        = "list"
   default     = []
+}
+
+variable "ssm_vars_path" {
+  description = "Path to the params stored in SSM fetched by a get-parameters-by-path awscli call"
+  default     = ""
 }
 
 variable "stage" {}

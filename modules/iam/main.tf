@@ -94,7 +94,7 @@ resource "aws_iam_role_policy" "ssm_permissions" {
 }
 
 # Add the SSM policy to the task execution role
-resource "aws_iam_role_policy" "ssm_permissions_execution" {
+resource "aws_iam_role_policy" "ssm_permissions_exec_role" {
   count  = "${(var.create && var.ssm_enabled) ? 1 : 0 }"
   name   = "${var.name}-ssm-permissions-execution-role"
   role   = "${aws_iam_role.ecs_task_execution_role.id}"

@@ -197,6 +197,18 @@ variable "container_port" {
   default = ""
 }
 
+variable "container_healthcheck" {
+  default = {}
+}
+
+variable "container_entrypoint" {
+  default = []
+}
+
+variable "container_command" {
+  default = []
+}
+
 variable "host_port" {
   default = ""
 }
@@ -238,12 +250,18 @@ variable "scaling_properties" {
   default = []
 }
 
-# container_envvars defines extra container env vars, list of maps
-# { key = val,key2= val2}
-
 variable "container_envvars" {
-  default = {}
+  description = "List of maps with keys such as `name` or `value`"
+  type        = "list"
+  default     = []
 }
+
+variable "ssm_vars_path" {
+  description = "Path to the params stored in SSM fetched by a get-parameters-by-path awscli call"
+  default     = ""
+}
+
+variable "stage" {}
 
 ####
 
@@ -332,4 +350,8 @@ variable "mountpoints" {
   #     container_path = "/foo",
   #     read_only = "false"
   # },
+}
+
+variable "vpc_name" {
+  description = "Provide the unique name (not the ID) of the VPC where the ECS cluster is based"
 }

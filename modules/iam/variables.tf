@@ -45,3 +45,5 @@ variable "s3_ro_paths" {
 variable "s3_rw_paths" {
   default = []
 }
+
+variable "container_image" {}

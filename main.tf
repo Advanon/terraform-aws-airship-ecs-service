@@ -1,6 +1,10 @@
 locals {
-  ecs_cluster_name = "${element(split("/",var.ecs_cluster_id),3)}"
-  launch_type      = "${var.fargate_enabled ? "FARGATE" : "EC2" }"
+  ecs_cluster_name      = "${element(split("/",var.ecs_cluster_id),3)}"
+  launch_type           = "${var.fargate_enabled ? "FARGATE" : "EC2" }"
+  ssm_vars              = "${split(",", data.external.fetch-ssm-params.result["vars"])}"
+  default_ssm_vars_path = "/${var.stage}/${var.name}/"
+
+  ssm_vars_path = "${length(var.ssm_vars_path)== 0 ? local.default_ssm_vars_path : var.ssm_vars_path }"
 }
 
 #
@@ -40,6 +44,8 @@ module "iam" {
 
   # In case Fargate is enabled an extra role needs to be added
   fargate_enabled = "${var.fargate_enabled}"
+
+  container_image = "${var.container_image}"
 }
 
 #
@@ -108,23 +114,29 @@ resource "aws_cloudwatch_log_group" "app" {
 #
 # Container_definition
 #
-module "container_definition" {
-  source          = "./modules/ecs_container_definition/"
-  container_name  = "${var.container_name}"
-  container_image = "${var.container_image}"
-
+module "ecs-container-definition" {
+  source                       = "cloudposse/ecs-container-definition/aws"
+  version                      = "0.14.0"
+  container_name               = "${var.container_name}"
+  container_image              = "${var.container_image}"
   container_cpu                = "${var.container_cpu}"
   container_memory             = "${var.container_memory}"
   container_memory_reservation = "${var.container_memory_reservation}"
+  entrypoint                   = "${var.container_entrypoint}"
+  healthcheck                  = "${var.container_healthcheck}"
+  command                      = "${var.container_command}"
 
-  container_port = "${var.container_port}"
-  host_port      = "${var.awsvpc_enabled ? var.container_port : var.host_port }"
+  port_mappings = [
+    {
+      containerPort = "${var.container_port}"
+      hostPort      = "${var.awsvpc_enabled ? var.container_port : var.host_port }"
+      protocol      = "tcp"
+    },
+  ]
 
-  hostname = "${var.awsvpc_enabled == 1 ? "" : var.name}"
-
-  container_envvars = "${var.container_envvars}"
-
-  mountpoints = ["${var.mountpoints}"]
+  environment  = "${var.container_envvars}"
+  secrets      = "${null_resource.convert-to-container-vars.*.triggers}"
+  mount_points = ["${var.mountpoints}"]
 
   log_options = {
     "awslogs-region"        = "${var.region}"
@@ -146,7 +158,7 @@ module "ecs_task_definition" {
 
   cluster_name = "${local.ecs_cluster_name}"
 
-  container_definitions = "${module.container_definition.json}"
+  container_definitions = "${module.ecs-container-definition.json}"
 
   # awsvpc_enabled sets if the ecs task definition is awsvpc 
   awsvpc_enabled = "${var.awsvpc_enabled}"
@@ -210,7 +222,7 @@ module "ecs_service" {
   awsvpc_subnets = "${var.awsvpc_subnets}"
 
   # awsvpc_security_group_ids defines the vpc_security_group_ids for an awsvpc module
-  awsvpc_security_group_ids = "${var.awsvpc_security_group_ids}"
+  awsvpc_security_group_ids = "${concat(list(aws_security_group.ecs_service_sg.id), var.awsvpc_security_group_ids)}"
 
   # lb_target_group_arn sets the arn of the target_group the service needs to connect to
   lb_target_group_arn = "${module.alb_handling.lb_target_group_arn}"
@@ -256,4 +268,49 @@ module "ecs_autoscaling" {
 
   # scaling_properties holds a list of maps with the scaling properties defined.
   scaling_properties = "${var.scaling_properties}"
+}
+
+resource "aws_security_group" "ecs_service_sg" {
+  vpc_id      = "${data.aws_vpc.this.id}"
+  description = "${var.name} ECS service tasks security group"
+  name        = "${var.name}-ecs-service"
+
+  ingress {
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+    cidr_blocks = ["${data.aws_vpc.this.cidr_block}"]
+  }
+
+  egress {
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "null_resource" "convert-to-container-vars" {
+  count = "${length(local.ssm_vars)}"
+
+  triggers = {
+    "name"      = "${element(local.ssm_vars, count.index)}"
+    "valueFrom" = "${local.ssm_vars_path}${element(local.ssm_vars, count.index)}"
+  }
+}
+
+data "external" "fetch-ssm-params" {
+  program = ["bash", "${path.module}/scripts/get-ssm-param-names.sh"]
+
+  query {
+    region   = "${var.region}"
+    ssm_path = "${local.ssm_vars_path}"
+  }
+}
+
+data "aws_vpc" "this" {
+  filter {
+    name   = "tag:Name"
+    values = ["${var.vpc_name}"]
+  }
 }

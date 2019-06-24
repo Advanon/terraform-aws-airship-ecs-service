@@ -20,9 +20,10 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
 
 # The ECS TASK ROLE execution role needed for FARGATE & AWS LOGS
 resource "aws_iam_role" "ecs_task_execution_role" {
-  count              = "${var.create ? 1 : 0 }"
-  name               = "${var.name}-ecs-task-execution_role"
-  assume_role_policy = "${data.aws_iam_policy_document.ecs_task_assume_role.json}"
+  count                 = "${var.create ? 1 : 0 }"
+  name                  = "${var.name}-ecs-task-execution_role"
+  assume_role_policy    = "${data.aws_iam_policy_document.ecs_task_assume_role.json}"
+  force_detach_policies = true
 }
 
 # We need this for FARGATE
@@ -34,9 +35,10 @@ resource "aws_iam_role_policy_attachment" "ecs_tasks_execution_role" {
 
 # The actual ECS TASK ROLE
 resource "aws_iam_role" "ecs_tasks_role" {
-  count              = "${var.create ? 1 : 0 }"
-  name               = "${var.name}-task-role"
-  assume_role_policy = "${data.aws_iam_policy_document.ecs_task_assume_role.json}"
+  count                 = "${var.create ? 1 : 0 }"
+  name                  = "${var.name}-task-role"
+  assume_role_policy    = "${data.aws_iam_policy_document.ecs_task_assume_role.json}"
+  force_detach_policies = true
 }
 
 # Policy Document to allow KMS Decryption with given keys

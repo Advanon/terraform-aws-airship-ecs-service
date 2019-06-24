@@ -28,7 +28,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 
 # We need this for FARGATE
 resource "aws_iam_role_policy_attachment" "ecs_tasks_execution_role" {
-  count      = "${(var.create && var.fargate_enabled ) ? 1 : 0 }"
+  count      = "${var.create ? 1 : 0 }"
   role       = "${aws_iam_role.ecs_task_execution_role.id}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }

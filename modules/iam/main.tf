@@ -73,7 +73,7 @@ data "aws_iam_policy_document" "ssm_permissions" {
       "ssm:List*",
     ]
 
-    resources = ["${formatlist("arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/application/%s/*",var.ssm_paths)}"]
+    resources = "*"
   }
 }
 
@@ -94,7 +94,7 @@ data "aws_iam_policy_document" "ecr-permissions" {
       "ecr:BatchGetImage",
     ]
 
-    resources = ["arn:aws:ecr:${var.region}:${data.aws_caller_identity.current.account_id}:repository/${element(split("/", var.container_image), 1)}"]
+    resources = "*"
   }
 }
 

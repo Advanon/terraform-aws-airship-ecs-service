@@ -20,23 +20,25 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
 
 # The ECS TASK ROLE execution role needed for FARGATE & AWS LOGS
 resource "aws_iam_role" "ecs_task_execution_role" {
-  count              = "${var.create ? 1 : 0 }"
-  name               = "${var.name}-ecs-task-execution_role"
-  assume_role_policy = "${data.aws_iam_policy_document.ecs_task_assume_role.json}"
+  count                 = "${var.create ? 1 : 0 }"
+  name                  = "${var.name}-ecs-task-execution_role"
+  assume_role_policy    = "${data.aws_iam_policy_document.ecs_task_assume_role.json}"
+  force_detach_policies = true
 }
 
 # We need this for FARGATE
 resource "aws_iam_role_policy_attachment" "ecs_tasks_execution_role" {
-  count      = "${(var.create && var.fargate_enabled ) ? 1 : 0 }"
+  count      = "${var.create ? 1 : 0 }"
   role       = "${aws_iam_role.ecs_task_execution_role.id}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 # The actual ECS TASK ROLE
 resource "aws_iam_role" "ecs_tasks_role" {
-  count              = "${var.create ? 1 : 0 }"
-  name               = "${var.name}-task-role"
-  assume_role_policy = "${data.aws_iam_policy_document.ecs_task_assume_role.json}"
+  count                 = "${var.create ? 1 : 0 }"
+  name                  = "${var.name}-task-role"
+  assume_role_policy    = "${data.aws_iam_policy_document.ecs_task_assume_role.json}"
+  force_detach_policies = true
 }
 
 # Policy Document to allow KMS Decryption with given keys
@@ -63,9 +65,15 @@ data "aws_iam_policy_document" "ssm_permissions" {
   count = "${var.create ? 1 : 0 }"
 
   statement {
-    effect    = "Allow"
-    actions   = ["ssm:GetParameter", "ssm:GetParametersByPath"]
-    resources = ["${formatlist("arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/application/%s/*",var.ssm_paths)}"]
+    effect = "Allow"
+
+    actions = [
+      "ssm:Describe*",
+      "ssm:Get*",
+      "ssm:List*",
+    ]
+
+    resources = ["*"]
   }
 }
 
@@ -76,12 +84,17 @@ data "aws_iam_policy_document" "ecr-permissions" {
     effect = "Allow"
 
     actions = [
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:BatchGetImage",
+      "ecr:GetAuthorizationToken",
       "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:GetRepositoryPolicy",
+      "ecr:DescribeRepositories",
+      "ecr:ListImages",
+      "ecr:DescribeImages",
+      "ecr:BatchGetImage",
     ]
 
-    resources = ["arn:aws:ecr:${var.region}:${data.aws_caller_identity.current.account_id}:repository/${element(split("/", var.container_image), 1)}"]
+    resources = ["*"]
   }
 }
 

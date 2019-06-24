@@ -73,7 +73,7 @@ data "aws_iam_policy_document" "ssm_permissions" {
       "ssm:List*",
     ]
 
-    resources = "*"
+    resources = ["*"]
   }
 }
 
@@ -94,7 +94,7 @@ data "aws_iam_policy_document" "ecr-permissions" {
       "ecr:BatchGetImage",
     ]
 
-    resources = "*"
+    resources = ["*"]
   }
 }
 

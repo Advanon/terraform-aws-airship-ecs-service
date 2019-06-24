@@ -15,7 +15,7 @@ Main changes made to the module since its forking:
 
 ## Versioning  
 `1.x.x` - will include all the changes mentioned above to the original fork  
-`0.5.x` - retains the versioning and changes of the original fork(s)  
+`0.x.x` - retains the versioning and changes of the original fork(s)  
 
 ## Examples  
 - [ ] TODO  
